@@ -1,6 +1,6 @@
-**# Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
+# Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
 
-En esta guía se documenta detalladamente el procedimiento técnico para el despliegue y puesta en marcha del servidor web en la máquina virtual **W-05**, ubicada en la zona desmilitarizada (DMZ) del **Proyecto G05**. El proceso abarca la personalización del sistema, el direccionamiento de red estático, el despliegue contenerizado de Nginx con datos persistentes, la activación del servicio de administración remota OpenSSH y la seguridad perimetral local mediante cortafuegos.
+En esta guía se documenta detalladamente el procedimiento técnico para el despliegue y puesta en marcha del servidor web en la máquina virtual **W-05**, ubicada en la zona desmilitarizada (DMZ) del **Proyecto G05**. El proceso abarca la personalización del sistema, el direccionamiento de red estático, el despliegue contenerizado de Nginx con datos persistentes, la instalación del módulo PHP para la integración con la base de datos, la activación del servicio de administración remota OpenSSH y la seguridad perimetral local mediante cortafuegos.
 
 ---
 
@@ -50,7 +50,23 @@ Se edita el archivo con la herramienta `nano` para incorporar el código que ser
 
 ---
 
-## 6. Despliegue del Contenedor Web Nginx con Volumen Mapeado
+## 6. Instalación de PHP y Conectores de Base de Datos
+
+Para posibilitar el procesamiento de scripts dinámicos en el servidor web y permitir la conexión con el servidor de base de datos MySQL/MariaDB remoto del proyecto, se instalan en el sistema base de la máquina `W-05` el procesador FastCGI `php-fpm` y la extensión de conexión `php-mysql`.
+
+![instalar php.png](./img/instalar%20php.png)
+
+---
+
+## 7. Creación del Script PHP de Conexión a la Base de Datos
+
+Se genera el archivo de script PHP en `/var/www/html/index.php` encargado de realizar la autenticación frente al motor de datos remoto, ejecutar las consultas SQL correspondientes y estructurar dinámicamente las filas de resultados dentro de una tabla HTML visual.
+
+![crear archivo php.png](./img/crear%20archivo%20php.png)
+
+---
+
+## 8. Despliegue del Contenedor Web Nginx con Volumen Mapeado
 
 Se realiza la puesta en marcha del contenedor web denominado `web-container` utilizando la imagen ligera `nginx:alpine`. Para garantizar la alta disponibilidad, se configura con la política `--restart always`. 
 
@@ -60,15 +76,15 @@ Se realiza el reenvío del puerto `80/TCP` del host hacia el contenedor y se apl
 
 ---
 
-## 7. Comprobación y Verificación del Servicio Web
+## 9. Comprobación y Verificación del Servicio Web
 
-Desde una máquina cliente ubicada dentro de la red corporativa, se efectúa la prueba de acceso abriendo el navegador web e introduciendo la IP del servidor web en la DMZ (`http://192.168.10.10`). Se confirma el correcto enrutamiento entre redes y el renderizado del archivo HTML personalizado.
+Desde una máquina cliente ubicada dentro de la red corporativa, se efectúa la prueba de acceso abriendo el navegador web e introduciendo la IP del servidor web en la DMZ (`http://192.168.10.10`). Se confirma el correcto enrutamiento entre redes y el renderizado del contenido servido.
 
 ![comprobación web.png](./img/comprobaci%C3%B3n%20web.png)
 
 ---
 
-## 8. Instalación y Puesta en Marcha de OpenSSH Server
+## 10. Instalación y Puesta en Marcha de OpenSSH Server
 
 Para posibilitar la administración y mantenimiento remoto seguro de la máquina virtual `W-05` desde otros puntos de la red, se instala el paquete `openssh-server` en la VM base y se habilita el demonio SSH para que inicie automáticamente junto con el sistema.
 
@@ -76,9 +92,8 @@ Para posibilitar la administración y mantenimiento remoto seguro de la máquina
 
 ---
 
-## 9. Configuración del Firewall del Sistema (UFW)
+## 11. Configuración del Firewall del Sistema (UFW)
 
 Para securizar la máquina `W-05` dentro de la DMZ, se habilita el cortafuegos interno `ufw` permitiendo explícitamente únicamente el tráfico necesario para el funcionamiento del servidor web (puerto `80/TCP`) y para la administración remota (puerto `22/TCP`).
 
 ![configuración firewall.png](./img/configuraci%C3%B3n%20firewall.png)
-**
