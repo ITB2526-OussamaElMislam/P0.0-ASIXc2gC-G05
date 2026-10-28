@@ -80,4 +80,4 @@ Para posibilitar la administración y mantenimiento remoto seguro de la máquina
 
 Para securizar la máquina `W-05` dentro de la DMZ, se habilita el cortafuegos interno `ufw` permitiendo explícitamente únicamente el tráfico necesario para el funcionamiento del servidor web (puerto `80/TCP`) y para la administración remota (puerto `22/TCP`).
 
-![configuracion firewall.png](./img/configuracion%20firewall.png)
+![configuración firewall.png](./img/configuraci%C3%B3n%20firewall.png)
