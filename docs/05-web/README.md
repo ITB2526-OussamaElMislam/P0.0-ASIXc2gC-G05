@@ -1,6 +1,6 @@
 # Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
 
-En este documento se describe el proceso paso a paso para la preparación, configuración de red, creación del contenido HTML local, despliegue del contenedor web con volumen persistente, comprobación del servicio y activación del servicio SSH en la VM **W-05**.
+En este documento se describe el proceso paso a paso para la preparación, configuración de red, instalación de Docker, creación del contenido HTML local, despliegue del contenedor web con volumen persistente, comprobación del servicio y activación del servicio SSH en la VM **W-05**.
 
 ---
 
@@ -8,12 +8,10 @@ En este documento se describe el proceso paso a paso para la preparación, confi
 
 Para identificar correctamente la máquina dentro de la infraestructura del proyecto, se cambia el nombre del host a `W-05`.
 
-```bash
 sudo hostnamectl set-hostname W-05
-```
 
 ### Captura: Cambio de Hostname
-![1. Cambio de nombre](./img/1.Cambio%20de%20nombre%20.png)
+![cambio de nombre .png](./img/cambio%20de%20nombre%20.png)
 
 ---
 
@@ -21,14 +19,12 @@ sudo hostnamectl set-hostname W-05
 
 Se crea el usuario `bchecker` con su directorio personal, shell `/bin/bash`, la contraseña global del proyecto (`bchecker121`) y privilegios de administración en el sistema.
 
-```bash
 isard@ubuntu2404:~$ sudo useradd -m -s /bin/bash bchecker
 isard@ubuntu2404:~$ echo "bchecker:bchecker121" | sudo chpasswd
 isard@ubuntu2404:~$ sudo usermod -aG sudo bchecker
-```
 
 ### Captura: Creación del usuario bchecker
-![2. Creación del usuario bchecker](./img/2.Creaci%C3%B3n%20del%20usuario%20bchecker.png)
+![creación del usuario bchecker.png](./img/creaci%C3%B3n%20del%20usuario%20bchecker.png)
 
 ---
 
@@ -38,7 +34,6 @@ Se configura la interfaz de red `enp1s0` conectada a la red **DMZ** (`itb5`) con
 
 Contenido del archivo `/etc/netplan/01-netcfg.yaml`:
 
-```yaml
 network:
   version: 2
   renderer: networkd
@@ -52,23 +47,24 @@ network:
           via: 192.168.10.1
       nameservers:
         addresses: [192.168.10.1]
-```
 
 ### Captura: Configuración de red (Netplan)
-![3. Configuración de red](./img/3.Configuraci%C3%B3n%20de%20red.png)
+![configuración de red.png](./img/configuraci%C3%B3n%20de%20red.png)
 
 ---
 
-## 4. Asignación del usuario `bchecker` al grupo Docker
+## 4. Instalación de Docker y asignación de permisos al usuario `bchecker`
 
-Se añade a `bchecker` al grupo `docker` para permitir la administración de contenedores sin necesidad de utilizar `sudo`.
+Se instala el motor de Docker en la máquina virtual y se añade al usuario `bchecker` al grupo `docker` para permitir la administración de contenedores sin requerir `sudo`.
 
-```bash
+bchecker@W-05:~$ sudo apt update && sudo apt install -y docker.io
 bchecker@W-05:~$ sudo usermod -aG docker bchecker
-```
 
-### Captura: Inclusión del usuario al grupo docker
-![Añadir usuario bchecker al grupo docker](./img/A%C3%B1adir%20usuario%20bchecker%20al%20grupo%20docker.png)
+### Captura: Instalación de Docker
+![instalación de docker.png](./img/instalaci%C3%B3n%20de%20docker.png)
+
+### Captura: Añadir usuario bchecker al grupo docker
+![añadir usuario bchecker al grupo docker.png](./img/a%C3%B1adir%20usuario%20bchecker%20al%20grupo%20docker.png)
 
 ---
 
@@ -76,18 +72,18 @@ bchecker@W-05:~$ sudo usermod -aG docker bchecker
 
 Se crea el directorio `/var/www/html` en la VM `W-05`, el archivo `index.html` y se edita para incluir el contenido personalizado del proyecto.
 
-```bash
 bchecker@W-05:~$ sudo mkdir -p /var/www/html
 bchecker@W-05:~$ sudo touch /var/www/html/index.html
-bchecker@W-05:~$ sudo nano /var/www/html/index.html
-```
 
-### Captura: Creación de directorio y archivo index.html
-![Creación del directorio e index.html](./img/imatge_2.png)
+### Captura: Creación del archivo html
+![creacion del archivo html.png](./img/creacion%20del%20archivo%20html.png)
+
+Edición del archivo con `nano`:
+
+bchecker@W-05:~$ sudo nano /var/www/html/index.html
 
 Contenido del archivo `/var/www/html/index.html`:
 
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -99,10 +95,9 @@ Contenido del archivo `/var/www/html/index.html`:
     <p>Grupo G05</p>
 </body>
 </html>
-```
 
-### Captura: Edición del contenido con nano
-![Edición del index.html en nano](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-56-28.png)
+### Captura: Configuración del archivo html
+![configuración archivo html.png](./img/configuraci%C3%B3n%20archivo%20html.png)
 
 ---
 
@@ -110,13 +105,11 @@ Contenido del archivo `/var/www/html/index.html`:
 
 Se arranca el contenedor Nginx vinculando el puerto 80 del host con el del contenedor y mapeando la carpeta local `/var/www/html` hacia `/usr/share/nginx/html`:
 
-```bash
 bchecker@W-05:~$ docker run -d --name web-container --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html nginx:alpine
 384ffb379486b11e7bc564a2da87ec1f7e0c1de5eb8976382dd523265e659947
-```
 
-### Captura: Despliegue del contenedor Docker
-![Despliegue del contenedor con volumen](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-58-15.png)
+### Captura: Creación del contenedor
+![creación contenedor.png](./img/creaci%C3%B3n%20contenedor.png)
 
 ---
 
@@ -124,8 +117,8 @@ bchecker@W-05:~$ docker run -d --name web-container --restart always -p 80:80 -v
 
 Se accede desde el navegador web apuntando a la dirección IP de la VM (`http://192.168.10.10`), comprobando que se carga la página web con el título `Proyecto G05 - DMZ Web` y el contenido configurado.
 
-### Captura: Visualización en navegador del cliente
-![Comprobación web desde el cliente](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-59-41.png)
+### Captura: Comprobación web
+![comprobación web.png](./img/comprobaci%C3%B3n%20web.png)
 
 ---
 
@@ -133,7 +126,6 @@ Se accede desde el navegador web apuntando a la dirección IP de la VM (`http://
 
 Se instala y activa el servicio OpenSSH Server directamente en el sistema base de la VM (fuera de Docker) para la administración remota.
 
-```bash
 bchecker@W-05:~$ sudo apt install openssh-server
 Reading package lists... Done
 Building dependency tree... Done
@@ -146,7 +138,6 @@ Synchronizing state of ssh.service with SysV service script with /usr/lib/system
 Executing: /usr/lib/systemd/systemd-sysv-install enable ssh
 Created symlink /etc/systemd/system/sshd.service -> /usr/lib/systemd/system/ssh.service.
 Created symlink /etc/systemd/system/multi-user.target.wants/ssh.service -> /usr/lib/systemd/system/ssh.service.
-```
 
-### Captura: Instalación y arranque del servicio SSH
-![Instalación de SSH](./img/Instalacion%20de%20ssh.png)
+### Captura: Instalación de SSH
+![instalacion de ssh.png](./img/instalacion%20de%20ssh.png)
