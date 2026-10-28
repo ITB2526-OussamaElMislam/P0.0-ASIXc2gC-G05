@@ -1,6 +1,6 @@
 # Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
 
-En esta guía se documenta detalladamente el procedimiento técnico para el despliegue y puesta en marcha del servidor web en la máquina virtual **W-05**, ubicada en la zona desmilitarizada (DMZ) del **Proyecto G05**. El proceso abarca la personalización del sistema, el direccionamiento de red estático, el despliegue contenerizado de Nginx con datos persistentes y la activación del servicio de administración remota OpenSSH.
+En esta guía se documenta detalladamente el procedimiento técnico para el despliegue y puesta en marcha del servidor web en la máquina virtual **W-05**, ubicada en la zona desmilitarizada (DMZ) del **Proyecto G05**. El proceso abarca la personalización del sistema, el direccionamiento de red estático, el despliegue contenerizado de Nginx con datos persistentes, la activación del servicio de administración remota OpenSSH y la seguridad perimetral local mediante cortafuegos.
 
 ---
 
@@ -73,3 +73,11 @@ Desde una máquina cliente ubicada dentro de la red corporativa, se efectúa la 
 Para posibilitar la administración y mantenimiento remoto seguro de la máquina virtual `W-05` desde otros puntos de la red, se instala el paquete `openssh-server` en la VM base y se habilita el demonio SSH para que inicie automáticamente junto con el sistema.
 
 ![instalacion de ssh.png](./img/instalacion%20de%20ssh.png)
+
+---
+
+## 9. Configuración del Firewall del Sistema (UFW)
+
+Para securizar la máquina `W-05` dentro de la DMZ, se habilita el cortafuegos interno `ufw` permitiendo explícitamente únicamente el tráfico necesario para el funcionamiento del servidor web (puerto `80/TCP`) y para la administración remota (puerto `22/TCP`).
+
+![configuracion firewall.png](./img/configuracion%20firewall.png)
