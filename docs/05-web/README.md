@@ -1,6 +1,6 @@
 # Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
 
-En este documento se describe el proceso paso a paso para la preparación, configuración de red, despliegue del contenedor web y activación del servicio SSH en la VM **W-05**.
+En este documento se describe el proceso paso a paso para la preparación, configuración de red, creación del contenido HTML local, despliegue del contenedor web con volumen persistente, comprobación del servicio y activación del servicio SSH en la VM **W-05**.
 
 ---
 
@@ -12,6 +12,7 @@ Para identificar correctamente la máquina dentro de la infraestructura del proy
 sudo hostnamectl set-hostname W-05
 ```
 
+### Captura: Cambio de Hostname
 ![1. Cambio de nombre](./img/1.Cambio%20de%20nombre%20.png)
 
 ---
@@ -26,6 +27,7 @@ isard@ubuntu2404:~$ echo "bchecker:bchecker121" | sudo chpasswd
 isard@ubuntu2404:~$ sudo usermod -aG sudo bchecker
 ```
 
+### Captura: Creación del usuario bchecker
 ![2. Creación del usuario bchecker](./img/2.Creaci%C3%B3n%20del%20usuario%20bchecker.png)
 
 ---
@@ -52,6 +54,7 @@ network:
         addresses: [192.168.10.1]
 ```
 
+### Captura: Configuración de red (Netplan)
 ![3. Configuración de red](./img/3.Configuraci%C3%B3n%20de%20red.png)
 
 ---
@@ -64,45 +67,71 @@ Se añade a `bchecker` al grupo `docker` para permitir la administración de con
 bchecker@W-05:~$ sudo usermod -aG docker bchecker
 ```
 
+### Captura: Inclusión del usuario al grupo docker
 ![Añadir usuario bchecker al grupo docker](./img/A%C3%B1adir%20usuario%20bchecker%20al%20grupo%20docker.png)
 
 ---
 
-## 5. Despliegue del contenedor web (Nginx)
+## 5. Preparación del directorio y creación de la página web local
 
-Se descarga la imagen ligera `nginx:alpine` y se inicia el contenedor vinculando el puerto 80 de la máquina virtual con reinicio automático.
+Se crea el directorio `/var/www/html` en la VM `W-05`, el archivo `index.html` y se edita para incluir el contenido personalizado del proyecto.
 
 ```bash
-bchecker@W-05:~$ docker run -d --name web-container --restart always -p 80:80 nginx:alpine
+bchecker@W-05:~$ sudo mkdir -p /var/www/html
+bchecker@W-05:~$ sudo touch /var/www/html/index.html
+bchecker@W-05:~$ sudo nano /var/www/html/index.html
 ```
 
-Salida del comando y descarga de capas:
+### Captura: Creación de directorio y archivo index.html
+![Creación del directorio e index.html](./img/imatge_2.png)
 
-```text
-Unable to find image 'nginx:alpine' locally
-alpine: Pulling from library/nginx
-b9b388a21ecf: Pull complete
-9b0f7dfe35b2: Pull complete
-657023555a2a: Pull complete
-26185d08a3ec: Pull complete
-7cc330898115: Pull complete
-7b229517ed22: Pull complete
-2ec5fb117ffa: Pull complete
-12b85cff06fd: Pull complete
-a4d5b1f57abc: Download complete
-acc2d54c3743: Download complete
-Digest: sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417
-Status: Downloaded newer image for nginx:alpine
-bccdd2bea65c3ddd456f7f2c80e2cafd065dc820f2d6f0c21d03f5c647507691
+Contenido del archivo `/var/www/html/index.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Proyecto G05 - DMZ Web</title>
+</head>
+<body>
+    <h1>Servidor Web W-05</h1>
+    <p>Grupo G05</p>
+</body>
+</html>
 ```
 
-![Creación del contenedor web](./img/Crea%C3%A7i%C3%B3n%20del%20contenedor%20web.png)
+### Captura: Edición del contenido con nano
+![Edición del index.html en nano](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-56-28.png)
 
 ---
 
-## 6. Instalación y activación del servicio OpenSSH
+## 6. Despliegue del contenedor web (Nginx) con volumen
 
-Se instala y activa el servicio OpenSSH Server directamente en el sistema base de la VM (fuera de Docker) para la administración remota de la máquina.
+Se arranca el contenedor Nginx vinculando el puerto 80 del host con el del contenedor y mapeando la carpeta local `/var/www/html` hacia `/usr/share/nginx/html`:
+
+```bash
+bchecker@W-05:~$ docker run -d --name web-container --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html nginx:alpine
+384ffb379486b11e7bc564a2da87ec1f7e0c1de5eb8976382dd523265e659947
+```
+
+### Captura: Despliegue del contenedor Docker
+![Despliegue del contenedor con volumen](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-58-15.png)
+
+---
+
+## 7. Verificación del sitio web desde el cliente
+
+Se accede desde el navegador web apuntando a la dirección IP de la VM (`http://192.168.10.10`), comprobando que se carga la página web con el título `Proyecto G05 - DMZ Web` y el contenido configurado.
+
+### Captura: Visualización en navegador del cliente
+![Comprobación web desde el cliente](./img/Captura%20de%20pantalla%20de%202026-10-28%2016-59-41.png)
+
+---
+
+## 8. Instalación y activación del servicio OpenSSH
+
+Se instala y activa el servicio OpenSSH Server directamente en el sistema base de la VM (fuera de Docker) para la administración remota.
 
 ```bash
 bchecker@W-05:~$ sudo apt install openssh-server
@@ -119,4 +148,5 @@ Created symlink /etc/systemd/system/sshd.service -> /usr/lib/systemd/system/ssh.
 Created symlink /etc/systemd/system/multi-user.target.wants/ssh.service -> /usr/lib/systemd/system/ssh.service.
 ```
 
+### Captura: Instalación y arranque del servicio SSH
 ![Instalación de SSH](./img/Instalacion%20de%20ssh.png)
