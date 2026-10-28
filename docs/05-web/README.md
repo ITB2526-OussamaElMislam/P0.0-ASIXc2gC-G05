@@ -12,8 +12,6 @@ Para identificar correctamente la máquina dentro de la infraestructura del proy
 sudo hostnamectl set-hostname W-05
 ```
 
-> **Ruta de la captura:** `docs/05-web/img/1.Cambio de nombre .png`
-
 ![1. Cambio de nombre](./img/1.Cambio%20de%20nombre%20.png)
 
 ---
@@ -27,8 +25,6 @@ isard@ubuntu2404:~$ sudo useradd -m -s /bin/bash bchecker
 isard@ubuntu2404:~$ echo "bchecker:bchecker121" | sudo chpasswd
 isard@ubuntu2404:~$ sudo usermod -aG sudo bchecker
 ```
-
-> **Ruta de la captura:** `docs/05-web/img/2.Creación del usuario bchecker.png`
 
 ![2. Creación del usuario bchecker](./img/2.Creaci%C3%B3n%20del%20usuario%20bchecker.png)
 
@@ -56,8 +52,6 @@ network:
         addresses: [192.168.10.1]
 ```
 
-> **Ruta de la captura:** `docs/05-web/img/3.Configuración de red.png`
-
 ![3. Configuración de red](./img/3.Configuraci%C3%B3n%20de%20red.png)
 
 ---
@@ -69,8 +63,6 @@ Se añade a `bchecker` al grupo `docker` para permitir la administración de con
 ```bash
 bchecker@W-05:~$ sudo usermod -aG docker bchecker
 ```
-
-> **Ruta de la captura:** `docs/05-web/img/Añadir usuario bchecker al grupo docker.png`
 
 ![Añadir usuario bchecker al grupo docker](./img/A%C3%B1adir%20usuario%20bchecker%20al%20grupo%20docker.png)
 
@@ -104,8 +96,6 @@ Status: Downloaded newer image for nginx:alpine
 bccdd2bea65c3ddd456f7f2c80e2cafd065dc820f2d6f0c21d03f5c647507691
 ```
 
-> **Ruta de la captura:** `docs/05-web/img/Creación del contenedor web.png`
-
 ![Creación del contenedor web](./img/Crea%C3%A7i%C3%B3n%20del%20contenedor%20web.png)
 
 ---
@@ -128,7 +118,5 @@ Executing: /usr/lib/systemd/systemd-sysv-install enable ssh
 Created symlink /etc/systemd/system/sshd.service -> /usr/lib/systemd/system/ssh.service.
 Created symlink /etc/systemd/system/multi-user.target.wants/ssh.service -> /usr/lib/systemd/system/ssh.service.
 ```
-
-> **Ruta de la captura:** `docs/05-web/img/Instalacion de ssh.png`
 
 ![Instalación de SSH](./img/Instalacion%20de%20ssh.png)
