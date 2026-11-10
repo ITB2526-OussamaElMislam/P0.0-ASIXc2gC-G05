@@ -68,7 +68,7 @@ Fichero `/etc/nftables.conf`. La política por defecto es **denegar** en `input`
 | Origen | Destino | Permitido |
 |---|---|---|
 | Intranet y DMZ | Internet | Todo |
-| Intranet | DMZ | Puertos 80, 21 y 22, y ping |
+| Intranet | DMZ | Puertos 80, 21 y 22, el rango pasivo del FTP (21100-21110) y ping |
 | `W-05` (DMZ) | `B-05` (Intranet) | Solo el puerto 3306 |
 | DMZ e Intranet | Router | DNS (53); DHCP (67) solo desde la Intranet |
 | Red de Isard (`enp1s0`) e Intranet | Router | SSH (22). La DMZ no puede entrar por SSH al router |
@@ -120,6 +120,7 @@ table inet filter {
 
 		# Intranet hacia la DMZ: web, FTP y SSH (y ping)
 		iifname "enp3s0" oifname "enp2s0" tcp dport { 21, 22, 80 } counter accept
+		iifname "enp3s0" oifname "enp2s0" tcp dport 21100-21110 counter accept
 		iifname "enp3s0" oifname "enp2s0" icmp type echo-request counter accept
 
 		# DMZ hacia Intranet: solo la web (W-05) a la BBDD (B-05) por el 3306
@@ -143,7 +144,7 @@ table ip nat {
 
 Las reglas con `counter` cuentan los paquetes que pasan por ellas, lo que sirve para comprobar el firewall con `sudo nft list ruleset`.
 
-Si el FTP funciona en modo pasivo, habrá que abrir también el rango de puertos de datos del contenedor FTP en la cadena `forward`.
+El contenedor FTP de `W-05` usa modo pasivo con el rango 21100-21110, por eso ese rango está abierto en `forward` (añadido el 2026-11-10).
 
 ### 4.3 Aplicar y dejar permanente
 
@@ -186,16 +187,24 @@ Las horas del `journalctl` están en UTC (una hora por detrás de la hora local)
 
 > Capturas pendientes: `sudo nft list ruleset` con los contadores, las líneas del `journalctl` con `DPT=3306`, y los `nc` y el `ssh` en el cliente.
 
-### 5.2 Pendientes (necesitan las VM de los compañeros encendidas)
+### 5.2 Pruebas con las VM de la DMZ y la BBDD encendidas (2026-11-10)
+
+| Desde | Prueba | Resultado |
+|---|---|---|
+| Cliente | `curl -I http://W-05` | `HTTP/1.1 200 OK` (Apache 2.4.69, PHP 8.2.35): el nombre resuelve y el puerto 80 pasa |
+| Cliente | `ftp 192.168.10.10` con `bchecker`: `ls`, `put prueba1`, `get index.html` | Funciona. Los datos van por los puertos pasivos 21105, 21103 y 21108, dentro del rango abierto |
+| `W-05` | `nc -zv -w 3 192.168.20.10 3306` | `succeeded`: la web llega a MySQL de `B-05` a través del router |
+
+Pendientes:
 
 | Desde | Prueba | Resultado esperado |
 |---|---|---|
-| `W-05` | `nc -zv -w 3 192.168.20.10 3306` | Conecta |
 | `W-05` | `nc -zv -w 3 192.168.20.10 22` | Falla (bloqueado) |
 | `W-05` | `ping -c 2 192.168.20.10` | Falla: solo se permite el 3306 |
 | `W-05` | `ping -c 2 8.8.8.8` | Responde |
-| Cliente | `curl -I http://W-05` | Responde la web |
-| Cliente | `nc -zv -w 3 192.168.10.10 22` | Conecta |
+| `B-05` | `ping -c 2 8.8.8.8` | Responde |
+
+> Capturas: las del `curl`, el FTP y el `nc` al 3306 ya están hechas y hay que subirlas a `docs/02-router-firewall/img/`.
 
 ## 6. SSH
 

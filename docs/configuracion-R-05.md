@@ -129,6 +129,7 @@ table inet filter {
 
 		# Intranet hacia la DMZ: web, FTP y SSH (y ping)
 		iifname "enp3s0" oifname "enp2s0" tcp dport { 21, 22, 80 } counter accept
+		iifname "enp3s0" oifname "enp2s0" tcp dport 21100-21110 counter accept
 		iifname "enp3s0" oifname "enp2s0" icmp type echo-request counter accept
 
 		# DMZ hacia Intranet: solo la web (W-05) a la BBDD (B-05) por el 3306
@@ -157,7 +158,7 @@ sudo systemctl enable --now nftables
 sudo nft list ruleset
 ```
 
-Estado: firewall aplicado el 2026-11-10 y probado desde el cliente de la Intranet. Faltan las pruebas con `W-05` y `B-05` encendidas.
+Estado: firewall aplicado el 2026-11-10 y probado desde el cliente de la Intranet. Probados con las VM encendidas: web (curl), FTP pasivo y `W-05`→`B-05` por el 3306. Faltan los bloqueos del 22 y ping desde `W-05` y la salida a internet de `W-05` y `B-05`.
 
 ## 6. DHCP (Kea)
 
@@ -301,5 +302,5 @@ Firewall, desde el cliente de la Intranet (2026-11-10, con `W-05` y `B-05` apaga
 | DNS (bind9): `R-05` y `R` | Hecho y probado |
 | Usuario `bchecker` | Hecho |
 | SSH | Hecho y probado desde la Intranet |
-| Firewall (nftables) | Aplicado y probado desde el cliente; faltan las pruebas con `W-05` y `B-05` encendidas |
+| Firewall (nftables) | Aplicado y probado (cliente, web, FTP y 3306); faltan los bloqueos desde `W-05` y la salida a internet de `W-05` y `B-05` |
 | DNS: registros de `W-05`, `F-05`, `B-05` y `www` | Hecho; falta probar con `W-05` encendida |

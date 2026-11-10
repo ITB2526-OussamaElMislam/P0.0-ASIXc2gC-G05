@@ -19,9 +19,9 @@
 | 9 | Configurar NAT y probar la salida a internet | Hecho, probado desde la Intranet |
 | 10 | Crear el usuario `bchecker` en el router | Hecho |
 | 11 | Firewall: política por defecto y reglas entre redes | Hecho |
-| 12 | Firewall: web hacia BBDD por el 3306 | Regla aplicada; falta probarla con `W-05` y `B-05` encendidas |
-| 13 | Firewall: clientes hacia la DMZ | Regla aplicada; falta probarla con `W-05` encendida |
-| 14 | Firewall: probar las reglas | En curso: comprobados el paso y el bloqueo desde el cliente |
+| 12 | Firewall: web hacia BBDD por el 3306 | Hecho: `W-05` conecta al 3306 de `B-05` (probado 2026-11-10) |
+| 13 | Firewall: clientes hacia la DMZ | Hecho: web y FTP accesibles desde el cliente (probado 2026-11-10) |
+| 14 | Firewall: probar las reglas | En curso: faltan los bloqueos (22 y ping) desde `W-05` |
 | 15 | Documentar red y router | Hecho, faltan las capturas |
 
 Resultado (2026-11-10): 11 tareas hechas, 2 con la regla aplicada pendientes de probar con las VM de los compañeros, 1 en curso y 1 por confirmar (ProofHub).
