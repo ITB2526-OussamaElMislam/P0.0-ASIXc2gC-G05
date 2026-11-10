@@ -1,6 +1,6 @@
 # Configuración del router R-05
 
-Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable del router: Oussama · última revisión: 2026-10-28
+Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable del router: Oussama · última revisión: 2026-11-10
 
 Documento de referencia con toda la configuración aplicada al router `R-05`. El detalle de cada servicio, con sus pruebas, está en `docs/01-red`, `docs/02-router-firewall` y `docs/03-dhcp-dns`.
 
@@ -83,9 +83,9 @@ sudo sysctl --system
 cat /proc/sys/net/ipv4/ip_forward      # debe devolver 1
 ```
 
-## 5. nftables: NAT y base del firewall
+## 5. nftables: NAT y firewall
 
-Fichero: `/etc/nftables.conf`
+Fichero: `/etc/nftables.conf`. Política por defecto denegar en `input` y `forward`, con NAT por `enp1s0`. El detalle de reglas y pruebas está en `docs/02-router-firewall`.
 
 ```
 #!/usr/sbin/nft -f
@@ -93,14 +93,52 @@ Fichero: `/etc/nftables.conf`
 flush ruleset
 
 table inet filter {
+
 	chain input {
-		type filter hook input priority filter;
+		type filter hook input priority filter; policy drop;
+
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+
+		# Ping al router
+		ip protocol icmp accept
+
+		# DNS (bind9) desde la DMZ y la Intranet
+		iifname { "enp2s0", "enp3s0" } udp dport 53 accept
+		iifname { "enp2s0", "enp3s0" } tcp dport 53 accept
+
+		# DHCP (Kea) solo en la Intranet
+		iifname "enp3s0" udp dport 67 accept
+
+		# SSH al router solo desde la red de Isard y la Intranet (no desde la DMZ)
+		iifname { "enp1s0", "enp3s0" } tcp dport 22 accept
+
+		counter limit rate 5/minute log prefix "R-05 input drop: "
 	}
+
 	chain forward {
-		type filter hook forward priority filter;
+		type filter hook forward priority filter; policy drop;
+
+		ct state established,related accept
+		ct state invalid drop
+
+		# Intranet y DMZ hacia internet
+		iifname "enp3s0" oifname "enp1s0" counter accept
+		iifname "enp2s0" oifname "enp1s0" counter accept
+
+		# Intranet hacia la DMZ: web, FTP y SSH (y ping)
+		iifname "enp3s0" oifname "enp2s0" tcp dport { 21, 22, 80 } counter accept
+		iifname "enp3s0" oifname "enp2s0" icmp type echo-request counter accept
+
+		# DMZ hacia Intranet: solo la web (W-05) a la BBDD (B-05) por el 3306
+		iifname "enp2s0" oifname "enp3s0" ip saddr 192.168.10.10 ip daddr 192.168.20.10 tcp dport 3306 counter accept
+
+		counter limit rate 5/minute log prefix "R-05 forward drop: "
 	}
+
 	chain output {
-		type filter hook output priority filter;
+		type filter hook output priority filter; policy accept;
 	}
 }
 
@@ -113,12 +151,13 @@ table ip nat {
 ```
 
 ```bash
+sudo nft -c -f /etc/nftables.conf
 sudo nft -f /etc/nftables.conf
 sudo systemctl enable --now nftables
 sudo nft list ruleset
 ```
 
-Estado: el NAT (masquerade por `enp1s0`) está activo. Las cadenas de `inet filter` están vacías y aceptan todo el tráfico; las reglas del firewall se añadirán en ese mismo fichero.
+Estado: firewall aplicado el 2026-11-10 y probado desde el cliente de la Intranet. Faltan las pruebas con `W-05` y `B-05` encendidas.
 
 ## 6. DHCP (Kea)
 
@@ -195,7 +234,7 @@ zone "g05.itb" {
 ```
 $TTL 604800
 @       IN  SOA ns.g05.itb. admin.g05.itb. (
-                1       ; serial
+                2       ; serial
                 604800  ; refresh
                 86400   ; retry
                 2419200 ; expire
@@ -204,6 +243,10 @@ $TTL 604800
 ns      IN  A   192.168.20.1
 R-05    IN  A   192.168.20.1
 R       IN  A   192.168.20.1
+W-05    IN  A   192.168.10.10
+F-05    IN  A   192.168.10.10
+B-05    IN  A   192.168.20.10
+www     IN  CNAME W-05
 ```
 
 Al modificar la zona hay que subir el número de `serial`.
@@ -237,6 +280,16 @@ Desde un cliente de la Intranet (resultado obtenido el 2026-10-28):
 | `ping google.com` | Responde: el DNS reenvía y el NAT funciona desde la Intranet |
 | `nslookup R-05` | `R-05.g05.itb` → `192.168.20.1` |
 
+Firewall, desde el cliente de la Intranet (2026-11-10, con `W-05` y `B-05` apagadas):
+
+| Prueba | Resultado |
+|---|---|
+| `ping google.com` | Responde (permitido) |
+| `nslookup www` | `W-05.g05.itb` → `192.168.10.10` |
+| `ssh bchecker@192.168.20.1` | Funciona |
+| `nc` al 80 de `W-05` | Permitido por el firewall (3 paquetes en su regla); sin respuesta porque la VM estaba apagada |
+| `nc` al 3306 de `W-05` | Bloqueado y registrado en el log |
+
 ## 9. Estado y pendiente
 
 | Elemento | Estado |
@@ -246,7 +299,7 @@ Desde un cliente de la Intranet (resultado obtenido el 2026-10-28):
 | NAT (masquerade) | Hecho y probado desde la Intranet |
 | DHCP (Kea) | Hecho y probado |
 | DNS (bind9): `R-05` y `R` | Hecho y probado |
-| Usuario `bchecker` | Comprobar con `id bchecker` |
-| SSH | Pendiente de comprobar |
-| Firewall: reglas entre redes | Pendiente |
-| DNS: registro de `F-05` | Pendiente (Sprint 3) |
+| Usuario `bchecker` | Hecho |
+| SSH | Hecho y probado desde la Intranet |
+| Firewall (nftables) | Aplicado y probado desde el cliente; faltan las pruebas con `W-05` y `B-05` encendidas |
+| DNS: registros de `W-05`, `F-05`, `B-05` y `www` | Hecho; falta probar con `W-05` encendida |

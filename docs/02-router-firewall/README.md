@@ -1,8 +1,8 @@
 # Router y firewall (R-05)
 
-Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable: Oussama · última revisión: 2026-10-28
+Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable: Oussama · última revisión: 2026-11-10
 
-El router `R-05` es una VM de Isard con Ubuntu Server 24.04 y tres interfaces. Es el único punto de paso entre NAT, DMZ e Intranet.
+El router `R-05` es una VM de Isard con Ubuntu Server 24.04 y tres interfaces. Es el único punto de paso entre NAT, DMZ e Intranet, y aplica el firewall con nftables.
 
 | Interfaz | Red de Isard | Red del proyecto | IP |
 |---|---|---|---|
@@ -59,9 +59,24 @@ cat /proc/sys/net/ipv4/ip_forward
 
 El resultado debe ser `1`.
 
-## 4. NAT (masquerade)
+## 4. NAT y firewall (nftables)
 
-Fichero `/etc/nftables.conf`:
+Fichero `/etc/nftables.conf`. La política por defecto es **denegar** en `input` y `forward`, y solo se permite lo necesario. El NAT (masquerade por `enp1s0`) está en la tabla `ip nat`.
+
+### 4.1 Qué se permite
+
+| Origen | Destino | Permitido |
+|---|---|---|
+| Intranet y DMZ | Internet | Todo |
+| Intranet | DMZ | Puertos 80, 21 y 22, y ping |
+| `W-05` (DMZ) | `B-05` (Intranet) | Solo el puerto 3306 |
+| DMZ e Intranet | Router | DNS (53); DHCP (67) solo desde la Intranet |
+| Red de Isard (`enp1s0`) e Intranet | Router | SSH (22). La DMZ no puede entrar por SSH al router |
+| Cualquier otro tráfico | | Denegado y registrado en el log (`R-05 input drop` y `R-05 forward drop`) |
+
+Las respuestas a conexiones ya permitidas pasan por `ct state established,related`.
+
+### 4.2 Configuración
 
 ```
 #!/usr/sbin/nft -f
@@ -69,14 +84,52 @@ Fichero `/etc/nftables.conf`:
 flush ruleset
 
 table inet filter {
+
 	chain input {
-		type filter hook input priority filter;
+		type filter hook input priority filter; policy drop;
+
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+
+		# Ping al router
+		ip protocol icmp accept
+
+		# DNS (bind9) desde la DMZ y la Intranet
+		iifname { "enp2s0", "enp3s0" } udp dport 53 accept
+		iifname { "enp2s0", "enp3s0" } tcp dport 53 accept
+
+		# DHCP (Kea) solo en la Intranet
+		iifname "enp3s0" udp dport 67 accept
+
+		# SSH al router solo desde la red de Isard y la Intranet (no desde la DMZ)
+		iifname { "enp1s0", "enp3s0" } tcp dport 22 accept
+
+		counter limit rate 5/minute log prefix "R-05 input drop: "
 	}
+
 	chain forward {
-		type filter hook forward priority filter;
+		type filter hook forward priority filter; policy drop;
+
+		ct state established,related accept
+		ct state invalid drop
+
+		# Intranet y DMZ hacia internet
+		iifname "enp3s0" oifname "enp1s0" counter accept
+		iifname "enp2s0" oifname "enp1s0" counter accept
+
+		# Intranet hacia la DMZ: web, FTP y SSH (y ping)
+		iifname "enp3s0" oifname "enp2s0" tcp dport { 21, 22, 80 } counter accept
+		iifname "enp3s0" oifname "enp2s0" icmp type echo-request counter accept
+
+		# DMZ hacia Intranet: solo la web (W-05) a la BBDD (B-05) por el 3306
+		iifname "enp2s0" oifname "enp3s0" ip saddr 192.168.10.10 ip daddr 192.168.20.10 tcp dport 3306 counter accept
+
+		counter limit rate 5/minute log prefix "R-05 forward drop: "
 	}
+
 	chain output {
-		type filter hook output priority filter;
+		type filter hook output priority filter; policy accept;
 	}
 }
 
@@ -88,50 +141,71 @@ table ip nat {
 }
 ```
 
+Las reglas con `counter` cuentan los paquetes que pasan por ellas, lo que sirve para comprobar el firewall con `sudo nft list ruleset`.
+
+Si el FTP funciona en modo pasivo, habrá que abrir también el rango de puertos de datos del contenedor FTP en la cadena `forward`.
+
+### 4.3 Aplicar y dejar permanente
+
 ```bash
-sudo nft -f /etc/nftables.conf
+sudo cp /etc/nftables.conf /etc/nftables.conf.bak
+sudo nft -c -f /etc/nftables.conf        # comprueba la sintaxis sin aplicar
+sudo bash -c 'nft -f /etc/nftables.conf; echo "Aplicado. Prueba y pulsa Ctrl+C para quedarte con estas reglas"; sleep 90; nft -f /etc/nftables.conf.bak; echo "REVERTIDO"'
 sudo systemctl enable --now nftables
 sudo nft list ruleset
 ```
 
-Todo lo que sale por `enp1s0` (red NAT de Isard) se enmascara con la IP del router.
+El segundo comando de aplicar carga las reglas y vuelve a las anteriores a los 90 segundos si no se cancela con Ctrl+C, para no quedarse sin acceso al router si algo falla. Como `/etc/nftables.conf` ya contiene las reglas nuevas, se cargan al arrancar.
 
-> Captura pendiente: salida de `sudo nft list ruleset`.
+Para volver atrás: `sudo cp /etc/nftables.conf.bak /etc/nftables.conf && sudo systemctl restart nftables`.
 
-### Pruebas del NAT
+## 5. Pruebas del firewall
 
-- Desde el router: `ping -c 3 8.8.8.8` y `ping -c 3 google.com` responden.
-- Desde un cliente de la Intranet: `ping -c 3 google.com` responde, por lo que los paquetes de la Intranet salen a internet a través del router.
+### 5.1 Realizadas el 2026-11-10 (con `W-05` y `B-05` apagadas)
 
-## 5. Firewall
+Desde un cliente de la Intranet (`192.168.20.100`):
 
-Estado: pendiente. De momento las cadenas `input`, `forward` y `output` de la tabla `inet filter` están vacías y aceptan todo el tráfico.
+| Prueba | Resultado | Qué demuestra |
+|---|---|---|
+| `ping -c 2 google.com` | Responde | Intranet hacia internet permitido (1 paquete en el contador de esa regla) |
+| `nslookup www` | Resuelve a `W-05.g05.itb` (`192.168.10.10`) | DNS permitido |
+| `ssh bchecker@192.168.20.1` | Funciona | SSH al router permitido desde la Intranet |
+| `nc -zv -w 3 192.168.10.10 80` | `timed out` | El firewall lo deja pasar: la regla de los puertos 21, 22 y 80 cuenta 3 paquetes (3 SYN de 60 bytes). No hay respuesta porque `W-05` estaba apagada |
+| `nc -zv -w 3 192.168.10.10 3306` | `timed out` | Bloqueado: 3 paquetes en el contador final de `forward` y entradas `R-05 forward drop` con `DPT=3306` en el log |
 
-Reglas previstas (política por defecto: denegar):
+El contador final de `input` está a 0, así que no se está bloqueando tráfico legítimo hacia el router.
 
-| Origen | Destino | Puerto | Acción |
-|---|---|---|---|
-| Intranet | NAT (internet) | Cualquiera | Permitir |
-| DMZ | NAT (internet) | Cualquiera | Permitir |
-| Intranet | DMZ | 80, 21, 22 | Permitir |
-| `W-05` (DMZ) | `B-05` (Intranet) | 3306 | Permitir |
-| Resto de la DMZ | Intranet | Cualquiera | Denegar |
-| NAT | DMZ e Intranet | Cualquiera | Denegar |
+Comandos para consultar el estado:
 
-Cuando se apliquen, hay que dejar pasar de forma explícita en `input` el DHCP (puertos 67 y 68), el DNS (53) y el SSH (22) hacia el router, para no cortarse el acceso.
+```bash
+sudo nft list ruleset
+sudo journalctl -k | grep "R-05 forward drop"
+```
 
-### Pruebas del firewall
+Las horas del `journalctl` están en UTC (una hora por detrás de la hora local).
 
-Pendiente de completar cuando estén las VM de la DMZ y la BBDD:
+> Capturas pendientes: `sudo nft list ruleset` con los contadores, las líneas del `journalctl` con `DPT=3306`, y los `nc` y el `ssh` en el cliente.
 
-- Permitido: Intranet hacia web, FTP y SSH de la DMZ; `W-05` hacia `B-05` por el 3306.
-- Bloqueado: DMZ hacia la Intranet por cualquier otro puerto.
+### 5.2 Pendientes (necesitan las VM de los compañeros encendidas)
 
-## 6. Comprobación del usuario bchecker
+| Desde | Prueba | Resultado esperado |
+|---|---|---|
+| `W-05` | `nc -zv -w 3 192.168.20.10 3306` | Conecta |
+| `W-05` | `nc -zv -w 3 192.168.20.10 22` | Falla (bloqueado) |
+| `W-05` | `ping -c 2 192.168.20.10` | Falla: solo se permite el 3306 |
+| `W-05` | `ping -c 2 8.8.8.8` | Responde |
+| Cliente | `curl -I http://W-05` | Responde la web |
+| Cliente | `nc -zv -w 3 192.168.10.10 22` | Conecta |
+
+## 6. SSH
+
+El router acepta conexiones SSH de `bchecker` desde la Intranet (probado el 2026-11-10 desde el cliente) y desde la red de Isard, que se usa para administrarlo desde fuera de clase. Desde la DMZ el firewall no lo permite.
+
+## 7. Usuario bchecker
 
 ```bash
 id bchecker
 su - bchecker
 ```
 
-> Pendiente: confirmar con el profesor si `bchecker` debe tener `sudo`.
+El usuario existe y se ha accedido con él al router. Pendiente de confirmar con el profesor si `bchecker` debe tener `sudo`.

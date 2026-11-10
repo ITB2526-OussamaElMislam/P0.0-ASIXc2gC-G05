@@ -1,6 +1,6 @@
 # DHCP y DNS
 
-Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable: Oussama · última revisión: 2026-10-28
+Proyecto P0.0-ASIXc2gC-G05 · módulo 0379 · responsable: Oussama · última revisión: 2026-11-10
 
 Los dos servicios se ejecutan directamente en la VM del router `R-05` (sin Docker). El DHCP lo da Kea y el DNS, bind9.
 
@@ -105,7 +105,7 @@ zone "g05.itb" {
 ```
 $TTL 604800
 @       IN  SOA ns.g05.itb. admin.g05.itb. (
-                1       ; serial
+                2       ; serial
                 604800  ; refresh
                 86400   ; retry
                 2419200 ; expire
@@ -114,9 +114,13 @@ $TTL 604800
 ns      IN  A   192.168.20.1
 R-05    IN  A   192.168.20.1
 R       IN  A   192.168.20.1
+W-05    IN  A   192.168.10.10
+F-05    IN  A   192.168.10.10
+B-05    IN  A   192.168.20.10
+www     IN  CNAME W-05
 ```
 
-Cumple el enunciado: `R-05` y `R` resuelven a la IP del router. Al modificar la zona hay que subir el número de `serial`.
+Cumple el enunciado: `R-05` y `R` resuelven a la IP del router. Además se han añadido `W-05`, `B-05`, `F-05` (misma IP que `W-05`, porque web y FTP comparten VM) y el alias `www` hacia `W-05`, para que los equipos resuelvan el nombre de la web. Al añadirlos se subió el `serial` a 2; hay que volver a subirlo con cada cambio.
 
 ```bash
 sudo named-checkconf
@@ -144,13 +148,14 @@ Desde un cliente de la Intranet (2026-10-28):
 | `ping R` | Responde `192.168.20.1` (resuelve `R.g05.itb`) |
 | `ping google.com` | Responde |
 | `nslookup R-05` | `R-05.g05.itb` → `192.168.20.1` |
+| `nslookup www` | Alias de `W-05.g05.itb` → `192.168.10.10` (2026-11-10) |
 
 > Captura pendiente: `ping R-05` y `nslookup R-05` en el cliente.
 
 ## 3. Pendiente
 
-- Añadir en la zona el registro de `F-05` hacia la IP de la VM de la DMZ (`192.168.10.10`), en el Sprint 3.
-- Valorar los registros de `W-05` y `B-05` cuando existan sus VM.
+- Probar `ping W-05` desde el cliente con `W-05` encendida (el nombre ya resuelve, la VM estaba apagada).
+- Comprobar que `W-05` y `B-05` usan el DNS del router (`192.168.10.1` y `192.168.20.1` respectivamente) y resuelven `B-05.g05.itb`.
 - Opcional: zona inversa.
 
 ## 4. Problemas habituales

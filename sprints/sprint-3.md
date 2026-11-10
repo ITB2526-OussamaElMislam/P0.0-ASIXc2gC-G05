@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 1 | `W-05`: contenedor FTP | Raul | Pendiente |
 | 2 | FTP: usuario `bchecker` y prueba de subida y bajada | Raul | Pendiente |
-| 3 | DNS: `F-05` apunta a `W-05` | Oussama | Pendiente |
+| 3 | DNS: `F-05` apunta a `W-05` | Oussama | Hecho; falta probar con `W-05` encendida |
 | 4 | Crear el cliente Linux en la Intranet | Por asignar | En curso (ya hay un cliente de pruebas) |
 | 5 | Crear el cliente Windows en la Intranet | Por asignar | Pendiente |
 | 6 | Probar DHCP, DNS y `bchecker` en los dos clientes | Todos | Pendiente |

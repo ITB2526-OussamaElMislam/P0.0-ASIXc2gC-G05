@@ -19,9 +19,9 @@
 | 10 | Comprobar los datos con un SELECT | Piero | Por confirmar |
 | 11 | Crear la VM `W-05` (DMZ) | Raul | En curso (ver `docs/05-web`) |
 | 12 | `W-05`: Docker y contenedor web | Raul | En curso (ver `docs/05-web`) |
-| 13 | Configurar SSH en las VM, fuera de Docker | Todos | En curso |
+| 13 | Configurar SSH en las VM, fuera de Docker | Todos | En curso: SSH de `R-05` hecho y probado desde la Intranet |
 
-Trasladadas del Sprint 1: firewall (tareas 11 a 14), que se prueba cuando existan `W-05` y `B-05`.
+Trasladadas del Sprint 1: pruebas del firewall (tareas 12 a 14), que necesitan `W-05` y `B-05` encendidas. Las reglas ya están aplicadas.
 
 Las tareas 1 a 3 se adelantaron porque dependen solo del router.
 
@@ -30,7 +30,7 @@ Las tareas 1 a 3 se adelantaron porque dependen solo del router.
 > Se completa al cerrar el sprint, con lo que se demuestre de verdad.
 
 ### Qué se ha entregado
-- DHCP (Kea) y DNS (bind9) en `R-05`, documentados en `docs/03-dhcp-dns`.
+- DHCP (Kea) y DNS (bind9) en `R-05`, con los registros de `W-05`, `F-05`, `B-05` y `www`, documentados en `docs/03-dhcp-dns`.
 - Por completar: BBDD, web y SSH.
 
 ### Demostración
