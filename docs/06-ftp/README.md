@@ -115,8 +115,9 @@ Ejecutar en la consola de **W-05** para confirmar la ejecución del servicio y l
 ```bash
 docker ps
 ```
-
 *Resultado esperado:* Contenedor `ftp-container` en estado `Up` vinculando los puertos `21/tcp` y `21100-21110/tcp`.
+
+![docker ps.png](./img/dockerps.png)
 
 ### B. Prueba de Conexión y Subida por Terminal (CLI)
 Desde un equipo cliente de la red local con acceso a la DMZ:
@@ -126,13 +127,15 @@ ftp 192.168.10.10
 # Introducir usuario: bchecker
 # Introducir contraseña: bchecker121
 ls
-put test_ftp.txt
+put ftp.txt
 quit
 ```
+![prueba ftp.png](./img/pruebaftp.png)
 
 ### C. Verificación de Sincronización en el Anfitrión
 Comprobar en la consola de **W-05** que el archivo subido mediante el cliente FTP se ha creado inmediatamente en el directorio del servidor web:
 
 ```bash
-ls -la /var/www/html/test_ftp.txt
+ls -la /var/www/html/ftp.txt
 ```
+![servidor ftp.png](./img/servidorftp.png)
