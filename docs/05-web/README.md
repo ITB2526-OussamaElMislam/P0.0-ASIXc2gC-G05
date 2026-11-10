@@ -1,4 +1,4 @@
-# Documentación de Configuración: Máquina W-05 (Servidor Web DMZ)
+# Documentación del Servicio Web (DMZ — W-05)
 
 En esta guía se documenta detalladamente el procedimiento técnico para el despliegue y puesta en marcha del servidor web en la máquina virtual **W-05**, ubicada en la zona desmilitarizada (DMZ) del **Proyecto G05**. El proceso abarca la personalización del sistema, el direccionamiento de red estático, el despliegue contenerizado de Nginx con datos persistentes, la instalación del módulo PHP para la integración con la base de datos, la activación del servicio de administración remota OpenSSH y la seguridad perimetral local mediante cortafuegos.
 
