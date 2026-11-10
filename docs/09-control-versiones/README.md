@@ -23,7 +23,7 @@ Toda la documentación y las configuraciones del proyecto viven en un repositori
 | `docs/04-bbdd` | Base de datos `B-05` | Piero |
 | `docs/05-web` | Servidor web | Raul |
 | `docs/06-ftp` | Servidor FTP | Raul |
-| `docs/07-clientes` | Clientes Linux y Windows | Por asignar |
+| `docs/07-clientes` | Clientes Linux y Windows | Oussama |
 | `docs/08-app-prueba` | Aplicación de prueba | Por asignar |
 | `docs/09-control-versiones` | Este documento | Oussama |
 | `diagramas/` | Diagrama de arquitectura | Equipo |
