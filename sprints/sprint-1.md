@@ -21,10 +21,10 @@
 | 11 | Firewall: política por defecto y reglas entre redes | Hecho |
 | 12 | Firewall: web hacia BBDD por el 3306 | Hecho: `W-05` conecta al 3306 de `B-05` (probado 2026-11-10) |
 | 13 | Firewall: clientes hacia la DMZ | Hecho: web y FTP accesibles desde el cliente (probado 2026-11-10) |
-| 14 | Firewall: probar las reglas | En curso: faltan los bloqueos (22 y ping) desde `W-05` |
+| 14 | Firewall: probar las reglas | Hecho: permitidos y bloqueados comprobados (2026-11-10) |
 | 15 | Documentar red y router | Hecho, faltan las capturas |
 
-Resultado (2026-11-10): 11 tareas hechas, 2 con la regla aplicada pendientes de probar con las VM de los compañeros, 1 en curso y 1 por confirmar (ProofHub).
+Resultado (2026-11-10): Las 15 tareas están hechas (ProofHub, confirmado por el equipo).
 
 ## Sprint review
 
@@ -46,10 +46,10 @@ Desde un cliente de la Intranet:
 | `ping R-05` | Responde `192.168.20.1` |
 | `ping google.com` | Responde: los paquetes salen a internet por el NAT del router |
 
-### Qué no se ha completado y por qué
+### Qué queda abierto
 
-- **Pruebas del firewall (tareas 12 a 14):** las reglas están aplicadas y probadas desde el cliente (paso y bloqueo comprobados con los contadores y el log). Falta probar `W-05` hacia `B-05` por el 3306 y el acceso a la web, y eso requiere las VM de los compañeros encendidas. Pasa al Sprint 2.
-- **ProofHub:** hay que confirmar y cerrar esta tarea.
+- **Firewall (tareas 11 a 14):** terminado y probado con las VM de los compañeros encendidas (web, FTP pasivo, 3306, bloqueos y salida a internet).
+- Solo faltan las capturas de pantalla de la documentación.
 
 ### Decisiones tomadas durante el sprint
 

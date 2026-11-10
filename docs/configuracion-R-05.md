@@ -158,7 +158,7 @@ sudo systemctl enable --now nftables
 sudo nft list ruleset
 ```
 
-Estado: firewall aplicado el 2026-11-10 y probado desde el cliente de la Intranet. Probados con las VM encendidas: web (curl), FTP pasivo y `W-05`→`B-05` por el 3306. Faltan los bloqueos del 22 y ping desde `W-05` y la salida a internet de `W-05` y `B-05`.
+Estado: firewall aplicado el 2026-11-10 y probado desde el cliente de la Intranet. Probado con las VM encendidas: web, FTP pasivo, `W-05`→`B-05` por el 3306, bloqueos del 22 y ping desde `W-05` y salida a internet de `W-05` y `B-05` (2026-11-10).
 
 ## 6. DHCP (Kea)
 
@@ -302,5 +302,5 @@ Firewall, desde el cliente de la Intranet (2026-11-10, con `W-05` y `B-05` apaga
 | DNS (bind9): `R-05` y `R` | Hecho y probado |
 | Usuario `bchecker` | Hecho |
 | SSH | Hecho y probado desde la Intranet |
-| Firewall (nftables) | Aplicado y probado (cliente, web, FTP y 3306); faltan los bloqueos desde `W-05` y la salida a internet de `W-05` y `B-05` |
+| Firewall (nftables) | Hecho y probado (2026-11-10) |
 | DNS: registros de `W-05`, `F-05`, `B-05` y `www` | Hecho; falta probar con `W-05` encendida |

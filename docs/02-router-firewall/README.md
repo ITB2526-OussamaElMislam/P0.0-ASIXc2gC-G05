@@ -195,16 +195,14 @@ Las horas del `journalctl` están en UTC (una hora por detrás de la hora local)
 | Cliente | `ftp 192.168.10.10` con `bchecker`: `ls`, `put prueba1`, `get index.html` | Funciona. Los datos van por los puertos pasivos 21105, 21103 y 21108, dentro del rango abierto |
 | `W-05` | `nc -zv -w 3 192.168.20.10 3306` | `succeeded`: la web llega a MySQL de `B-05` a través del router |
 
-Pendientes:
+| `W-05` | `nc -zv -w 3 192.168.20.10 22` | `timed out`: bloqueado, como se esperaba |
+| `W-05` | `ping -c 2 192.168.20.10` | 100% de pérdida: bloqueado, solo se permite el 3306 |
+| `W-05` | `ping -c 2 8.8.8.8` | Responde (0% de pérdida): la DMZ sale a internet |
+| `B-05` | `ping -c 2 8.8.8.8` | Responde (0% de pérdida): la Intranet sale a internet |
 
-| Desde | Prueba | Resultado esperado |
-|---|---|---|
-| `W-05` | `nc -zv -w 3 192.168.20.10 22` | Falla (bloqueado) |
-| `W-05` | `ping -c 2 192.168.20.10` | Falla: solo se permite el 3306 |
-| `W-05` | `ping -c 2 8.8.8.8` | Responde |
-| `B-05` | `ping -c 2 8.8.8.8` | Responde |
+Con esto quedan comprobadas todas las reglas de la tabla 4.1.
 
-> Capturas: las del `curl`, el FTP y el `nc` al 3306 ya están hechas y hay que subirlas a `docs/02-router-firewall/img/`.
+> Capturas: las del `curl`, el FTP, el `nc` al 3306 y los bloqueos y pings desde `W-05` y `B-05` ya están hechas y hay que subirlas a `docs/02-router-firewall/img/`.
 
 ## 6. SSH
 
