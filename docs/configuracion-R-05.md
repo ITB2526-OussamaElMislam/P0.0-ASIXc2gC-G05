@@ -43,7 +43,12 @@ echo 'bchecker:<contraseña del enunciado>' | sudo chpasswd
 id bchecker
 ```
 
-La contraseña es la que indica el enunciado de la práctica P0.0. Pendiente de confirmar con el profesor si `bchecker` necesita `sudo`.
+La contraseña es la que indica el enunciado de la práctica P0.0. El profesor confirmó (2026-11-10) que `bchecker` debe tener `sudo` en todas las máquinas, así que se añade al grupo `sudo`:
+
+```bash
+sudo usermod -aG sudo bchecker
+id bchecker
+```
 
 ## 3. Red (netplan)
 

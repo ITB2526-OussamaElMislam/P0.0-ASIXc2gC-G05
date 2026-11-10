@@ -215,4 +215,6 @@ id bchecker
 su - bchecker
 ```
 
-El usuario existe y se ha accedido con él al router. Pendiente de confirmar con el profesor si `bchecker` debe tener `sudo`.
+El usuario existe y se ha accedido con él al router. El profesor confirmó el 2026-11-10 que `bchecker` debe tener `sudo` en todas las máquinas (`R-05`, `W-05` y `B-05`). Se añadió con `sudo usermod -aG sudo bchecker`, ejecutado por SSH desde el router.
+
+> Captura pendiente: `id bchecker` y `sudo whoami`.

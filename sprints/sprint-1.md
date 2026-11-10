@@ -56,7 +56,7 @@ Desde un cliente de la Intranet:
 | Decisión | Motivo |
 |---|---|
 | Rangos `192.168.10.0/24` y `192.168.20.0/24` en lugar de `172.16.x.x` | Son los del diagrama que acordó el equipo |
-| Web y FTP comparten VM (`W-05`), con `F-05` resuelto por DNS | Ahorra una VM; pendiente de confirmar con el profesor |
+| Web y FTP comparten VM (`W-05`), con `F-05` resuelto por DNS | Ahorra una VM; el profesor confirmó que se puede (2026-11-10) |
 | Router con Ubuntu Server y netplan | Es lo que usa el equipo y se ajusta mejor a un router |
 | Dominio interno `g05.itb` | Evita conflictos con `.local` (mDNS) |
 | DHCP con Kea y DNS con bind9 | Servicios separados, uno por función |
