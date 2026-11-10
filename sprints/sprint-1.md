@@ -8,7 +8,7 @@
 
 | # | Tarea | Estado |
 |---|---|---|
-| 1 | Crear proyecto en ProofHub y planificar sprints | Por confirmar |
+| 1 | Crear proyecto en ProofHub y planificar sprints | Hecho |
 | 2 | Crear repositorio en GitHub (README y estructura de carpetas) | Hecho |
 | 3 | Definir rangos IP y hostnames | Hecho |
 | 4 | Dibujar el diagrama de arquitectura | Hecho |
