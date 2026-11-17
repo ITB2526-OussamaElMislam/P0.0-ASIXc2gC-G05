@@ -28,7 +28,6 @@ Toda la documentación y las configuraciones del proyecto viven en un repositori
 | `docs/09-control-versiones` | Este documento | Oussama |
 | `diagramas/` | Diagrama de arquitectura | Equipo |
 | `sprints/` | Planificación, review y retrospectiva de cada sprint | Equipo |
-| `configs/` | Ficheros de configuración | Equipo |
 
 Las capturas de cada servicio van en una carpeta `img/` dentro de su carpeta de documentación.
 
