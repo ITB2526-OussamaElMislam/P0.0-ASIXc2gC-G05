@@ -20,14 +20,14 @@
 | 11 | GitHub: clave pública/privada | Oussama | Pendiente |
 | 12 | Documentar el control de versiones | Oussama | Hecho (`docs/09-control-versiones`) |
 | 13 | Montar el árbol de documentación en Markdown | Todos | Hecho |
-| 14 | Actualizar el diagrama final | Oussama | Pendiente |
+| 14 | Actualizar el diagrama final | Oussama | Hecho: diagrama vigente `diagrama.png`; eliminado el antiguo |
 | 15 | Revisión final y entrega | Todos | En curso |
 
 ## Sprint review
 
 - Qué se ha entregado: FTP en Docker con modo pasivo, clientes Linux y Windows por DHCP, la aplicación web conectada a la BBDD y toda la documentación en el repo.
 - Demostración: la app muestra las tablas de la BBDD desde un cliente; subida y bajada de un fichero por FTP con `bchecker`.
-- Qué no se ha completado y por qué: falta la clave SSH de GitHub (tarea 11), el diagrama final (tarea 14) y probar `bchecker` en los clientes. Quedan también algunas capturas.
+- Qué no se ha completado y por qué: falta la clave SSH de GitHub (tarea 11) y probar `bchecker` en los clientes. Quedan también algunas capturas.
 
 ## Retrospectiva
 

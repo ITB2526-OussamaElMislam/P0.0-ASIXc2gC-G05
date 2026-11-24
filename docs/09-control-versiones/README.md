@@ -150,5 +150,5 @@ En la página del repositorio: **Code → Download ZIP**. Así se tiene una copi
 
 ## 8. Pendiente
 
-- Decidir qué hacer con `diagramas/arquitectura_p0_0_dmz_intranet.png`, que usa los rangos antiguos `172.16.x.x` y no coincide con el diagrama vigente (`diagrama.png`).
+- Se eliminó `diagramas/arquitectura_p0_0_dmz_intranet.png` (rangos `172.16.x.x` antiguos); el diagrama vigente es `diagrama.png`.
 - Completar este documento con la clave SSH cuando se cree.
