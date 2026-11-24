@@ -24,7 +24,7 @@ Toda la documentación y las configuraciones del proyecto viven en un repositori
 | `docs/05-web` | Servidor web | Raul |
 | `docs/06-ftp` | Servidor FTP | Raul |
 | `docs/07-clientes` | Clientes Linux y Windows | Oussama |
-| `docs/08-app-prueba` | Aplicación de prueba | Por asignar |
+| `docs/08-app-prueba` | Aplicación de prueba | Raul |
 | `docs/09-control-versiones` | Este documento | Oussama |
 | `diagramas/` | Diagrama de arquitectura | Equipo |
 | `sprints/` | Planificación, review y retrospectiva de cada sprint | Equipo |
@@ -80,7 +80,75 @@ cat ~/.ssh/id_ed25519.pub
 
 > Captura pendiente: clave añadida en GitHub y respuesta de `ssh -T git@github.com`.
 
-## 7. Pendiente
+## 7. Plan B: gestionar el repositorio sin Claude
+
+Si Claude no está disponible, cualquiera del equipo puede subir todo con Git o desde la web de GitHub.
+
+### 7.1 Con Git (Linux o PowerShell)
+
+Instalar Git si no está: `sudo apt install -y git` en Ubuntu, o Git for Windows en Windows. Después, una sola vez:
+
+```bash
+git config --global user.name "Tu Nombre"
+git config --global user.email "tu_correo"
+git clone https://github.com/ITB2526-OussamaElMislam/P0.0-ASIXc2gC-G05.git
+cd P0.0-ASIXc2gC-G05
+```
+
+Copiar los ficheros nuevos a su carpeta (por ejemplo, las capturas a `docs/02-router-firewall/img/`) y subirlos:
+
+```bash
+git pull                                  # traer lo último antes de tocar nada
+git status                                # ver qué hay de nuevo
+git add -A                                # preparar todo (o git add docs/02-router-firewall)
+git commit -m "Describe lo que has hecho"
+git push origin main
+```
+
+Al hacer `push`, GitHub pide usuario y contraseña. La contraseña es un **token de acceso personal** (GitHub → Settings → Developer settings → Personal access tokens), no la contraseña de la cuenta. Con una clave SSH configurada (apartado 6) no pide nada.
+
+Para subir el repositorio entero desde cero a un repositorio vacío:
+
+```bash
+cd carpeta_del_proyecto
+git init -b main
+git add -A
+git commit -m "Subida completa del proyecto P0.0 G05"
+git remote add origin https://github.com/ITB2526-OussamaElMislam/P0.0-ASIXc2gC-G05.git
+git push -u origin main
+```
+
+### 7.2 Desde la web de GitHub (sin instalar nada)
+
+1. Abrir el repositorio y entrar en la carpeta donde va el fichero.
+2. Pulsar **Add file → Upload files**.
+3. Arrastrar los ficheros o las carpetas. Máximo 100 ficheros por subida y 25 MB cada uno.
+4. Escribir un mensaje y pulsar **Commit changes**.
+
+Para editar un fichero de texto: abrirlo, pulsar el lápiz, cambiarlo y confirmar el commit.
+
+### 7.3 Problemas habituales
+
+| Problema | Solución |
+|---|---|
+| `push` rechazado (`rejected`, `fetch first`) | Alguien ha subido antes: `git pull --rebase` y de nuevo `git push origin main` |
+| `Please tell me who you are` | Falta `git config --global user.name` y `user.email` |
+| Pide contraseña y la rechaza | Usar un token de acceso personal, no la contraseña de la cuenta |
+| `This repository moved` | Es un aviso. Para quitarlo: `git remote set-url origin https://github.com/ITB2526-OussamaElMislam/P0.0-ASIXc2gC-G05.git` |
+| Conflicto al hacer `pull` | Abrir el fichero, quedarse con el texto correcto, quitar las marcas `<<<<<<<`, `=======` y `>>>>>>>`, y luego `git add` y `git commit` |
+| Un fichero no se sube | Comprobar que no pasa de 25 MB (web) o 100 MB (Git) y que no está en `.gitignore` |
+
+### 7.4 Copia de seguridad antes de presentar
+
+En la página del repositorio: **Code → Download ZIP**. Así se tiene una copia completa por si falla internet o GitHub durante la presentación. También sirve tener el repositorio clonado en una VM o en el portátil: `git clone` y `git pull` antes de empezar.
+
+### 7.5 Comprobación final
+
+- `git status` dice `nothing to commit, working tree clean` y `git log --oneline -5` muestra los últimos commits.
+- En la web del repositorio se ven todas las carpetas (`docs`, `diagramas`, `sprints`) y los `README.md` se muestran con formato.
+- Las capturas se ven en cada `README.md` (si aparece un icono roto, la ruta del `img/` es incorrecta).
+
+## 8. Pendiente
 
 - Decidir qué hacer con `diagramas/arquitectura_p0_0_dmz_intranet.png`, que usa los rangos antiguos `172.16.x.x` y no coincide con el diagrama vigente (`diagrama.png`).
 - Completar este documento con la clave SSH cuando se cree.
